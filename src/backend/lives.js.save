@@ -1,0 +1,72 @@
+const STORAGE_KEY= "metropolis_game_state";
+
+const DEFAULT_STATE={
+    lives:3,
+    quests: {},  
+    cooldownUntil: null
+};
+
+function loadState(){
+    const raw= localStorage.getItem(STORAGE-KEY);
+    return raw ? JSON.parse(raw) : {...DEFAULT_STATE};
+
+}
+
+function saveState(state){
+    localStorage.setItem((STORAGE_KEY), JSON.stringigy(state));
+
+}
+
+let state = loadState();
+
+export function getLives(){
+    return state.lives;
+}
+
+export function loseLife(){
+    if(state.lives<=0) return;
+
+    state.lives-=1;
+
+    if(state.lives==0){
+        startCooldown(60);
+    }
+    saveState(state);
+}
+
+export function resetLives(){
+    state.lives=3;
+    state.cooldownUntil= null;
+    saveState(state);
+}
+
+//QUESTS
+
+export function completeQuest(id){
+    state.quests[id]=true;
+    saveState(state);
+}
+
+export function isQuestComplete(id){
+    return !!state.quests[id];
+}
+
+function startCooldown(seconds){
+    state.cooldownUntil= Date.now() + seconds*1000; //when cooldown should end after player looses all lives
+}
+
+export function getCooldownRemaining(){
+    if(!state.cooldownUntil) return 0;
+    return Math.max(0, state.cooldownUntil- Date.now());
+}
+
+export function tickCooldown(){
+    if(state.cooldownUntil && Date.now() >= state.cooldownUntil){
+        resetLives();
+    }
+}
+
+export function debugResetAll(){
+    state={...DEFAULT_STATE};
+    saveState(state);
+}
